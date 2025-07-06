@@ -2,6 +2,8 @@ import logging
 import multiprocessing
 import uvicorn
 import sys
+import os
+from dotenv import load_dotenv
 from telegram import Update, WebAppInfo, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes
 
@@ -9,21 +11,29 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 sys.path.append('.')
 from web.app import app as fastapi_app
 
+load_dotenv() # Load environment variables from .env file
+
 # --- LOGGING SETUP ---
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-# --- CONFIGURATION ---
-BOT_TOKEN = "7839428354:AAG53ugX-BPtorfl3SW-VaGOXKxJugDVGzw"
-# This URL must point to your ngrok tunnel forwarding to LOCAL_PORT
-WEB_APP_URL = "https://30a8-212-23-200-50.ngrok-free.app"
-LOCAL_HOST = "127.0.0.1"
-LOCAL_PORT = 8000
+# --- CONFIGURATION (from environment variables) ---
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+# The public URL of your Render/Railway service
+WEB_APP_URL = os.getenv("WEB_APP_URL")
+# Render/Railway provides the port via the PORT env var
+LOCAL_PORT = int(os.getenv("PORT", 8000))
+# Host must be 0.0.0.0 to be reachable in a container
+LOCAL_HOST = "0.0.0.0"
+
 
 def run_fastapi():
     """Function to run the FastAPI server using uvicorn."""
+    if not BOT_TOKEN or not WEB_APP_URL:
+        logger.error("BOT_TOKEN and WEB_APP_URL must be set in environment variables.")
+        return
     print(f"Starting FastAPI server on http://{LOCAL_HOST}:{LOCAL_PORT}")
     uvicorn.run(fastapi_app, host=LOCAL_HOST, port=LOCAL_PORT)
 
@@ -61,6 +71,5 @@ def main() -> None:
         logger.info("Web server stopped.")
 
 if __name__ == "__main__":
-    # freeze_support() is necessary for multiprocessing to work correctly on Windows
-    multiprocessing.freeze_support()
     main()
+
