@@ -726,6 +726,30 @@ def create_deal(request: DealCreateRequest, db: Session = Depends(get_db)):
     db.add(new_deal)
     db.commit()
     db.refresh(new_deal)
+
+    # Notify buyer and seller via Telegram bot
+    try:
+        bot_token = os.getenv("BOT_TOKEN")
+        if bot_token:
+            # Notify buyer
+            requests.post(
+                f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                data={
+                    "chat_id": buyer.telegram_id,
+                    "text": f"Вы успешно купили товар '{item.name}' за {item.price} {item.currency}."
+                }, timeout=5
+            )
+            # Notify seller
+            requests.post(
+                f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                data={
+                    "chat_id": seller.telegram_id,
+                    "text": f"Ваш товар '{item.name}' был куплен пользователем @{buyer.username or buyer.first_name}."
+                }, timeout=5
+            )
+    except Exception as tel_err:
+        print(f"Failed to send Telegram purchase notification: {tel_err}")
+
     return {"message": "Deal created successfully", "deal_id": new_deal.id}
 
 @app.get("/api/my_sales/{telegram_id}")

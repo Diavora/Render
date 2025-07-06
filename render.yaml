@@ -1,0 +1,28 @@
+# Render.com Infrastructure as Code file
+# Docs: https://render.com/docs/infrastructure-as-code
+
+services:
+  - type: web
+    name: sacredx-web
+    env: python
+    plan: free
+    buildCommand: >-
+      pip install --upgrade pip && \
+      pip install -r requirements.txt && \
+      alembic upgrade head  # миграции БД, удалите строку если не используете Alembic
+    startCommand: uvicorn web.app:app --host 0.0.0.0 --port $PORT
+    autoDeploy: true
+    # Установите переменные среды через Dashboard Render
+    # Пример:
+    # envVars:
+    #   - key: BOT_TOKEN
+    #     sync: false  # задаётся через UI
+    #   - key: DATABASE_URL
+    #     fromDatabase: my-db
+
+# При необходимости добавьте секцию databases, если планируете размещать БД на Render
+# databases:
+#   - name: sacredx-db
+#     plan: free
+#     postgresMajorVersion: 15
+#     ipAllowList: []

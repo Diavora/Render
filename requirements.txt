@@ -8,4 +8,3 @@ aiofiles==23.2.1
 python-multipart
 Jinja2==3.1.4
 python-dotenv
-requests
