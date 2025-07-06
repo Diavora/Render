@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Marketplace</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}?v=2.1">
+    <style>
+        /* Стили для карточек статистики в профиле */
+                .profile-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .stat-card {
+            /* background-color: #1c1c1e; */ /* Фон убран */
+            border-radius: 12px;
+            padding: 15px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .stat-card .stat-icon {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .fa-wallet { color: #0a84ff; }
+        .stat-card .fa-snowflake { color: #5ac8fa; } /* Light blue for snowflake */
+        .stat-card .fa-gem { color: #ff9f0a; }
+
+        .stat-label {
+            font-size: 14px;
+            color: #8e8e93; /* Серый для подписи */
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff; /* Белый для значения */
+        }
+
+        /* Стили для карточек заданий */
+        .tasks-list {
+            padding: 0 16px;
+        }
+
+        .task-card {
+            margin-bottom: 28px;
+            padding: 0;
+        }
+
+        .task-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .task-icon-wrapper {
+            font-size: 20px;
+            color: #8e8e93; /* Серый для иконки */
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .task-info h4 {
+            margin: 0 0 4px 0;
+            font-size: 17px;
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .task-info p {
+            margin: 0;
+            font-size: 15px;
+            color: #8e8e93;
+            line-height: 1.4;
+        }
+
+        .task-actions {
+            margin-top: 12px;
+        }
+
+        .task-reward-text {
+            font-size: 15px;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+
+        .task-reward-text .fa-gem {
+            color: #ff9f0a; /* Оранжевый для бонусов */
+        }
+
+        .task-card button {
+            width: 100%;
+            background-color: #30d158; /* Яркий зеленый */
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .task-card button:disabled {
+            background-color: #30d158;
+            opacity: 0.7;
+            cursor: default;
+        }
+
+        .task-card.completed {
+            opacity: 0.7;
+        }
+
+        .modal-footer-button {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            border: 1px solid #30363d;
+            background-color: #21262d;
+            color: #c9d1d9;
+            transition: background-color 0.2s ease;
+        }
+
+        .modal-footer-button:hover {
+            background-color: #30363d;
+        }
+
+        .profile-info {
+            text-align: center;
+            margin-bottom: 24px; /* Add some space below the name */
+        }
+    </style>
+</head>
+<body>
+    <div id="background-animation"></div>
+
+    <!-- Парящий хедер с поиском -->
+    <header id="main-header">
+        <div id="header-content">
+            <input type="text" id="search-input" class="search-bar" placeholder="Найти игру...">
+        </div>
+    </header>
+
+    <div class="app-container">
+        <main class="main-content">
+            <!-- Экран 1: Каталог игр -->
+            <section id="catalog-view" class="view active">
+                <div id="catalog-grid" class="catalog-grid">
+                    <!-- Карточки игр будут вставлены сюда -->
+                </div>
+                <div id="catalog-loading" class="loading-spinner"></div>
+                <p id="catalog-error" class="error-message" style="display: none;"></p>
+            </section>
+
+            <!-- Экран 2: Предметы в игре -->
+            <section id="items-view" class="view">
+                <div class="view-header">
+                    <button class="back-button" data-target="catalog-view"><i class="fas fa-arrow-left"></i></button>
+                    <h2 id="items-game-name">Предметы</h2>
+                </div>
+                <div id="items-grid" class="items-grid">
+                    <!-- Карточки предметов будут вставлены сюда -->
+                </div>
+                <div id="items-loading" class="loading-spinner" style="display: none;"></div>
+                <p id="items-error" class="error-message" style="display: none;"></p>
+            </section>
+
+            <!-- Экран 3: Форма продажи -->
+            <section id="sell-view" class="view">
+                <div class="view-header">
+                    <h2>Продать предмет</h2>
+                </div>
+                <form id="sell-form" class="form-container">
+                    <div class="form-group">
+                        <label for="item-game">Игра</label>
+                        <select id="item-game" name="game_id" required>
+                            <option value="" disabled selected>Выберите игру</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="item-name">Название товара</label>
+                        <input type="text" id="item-name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="item-description">Описание</label>
+                        <textarea id="item-description" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group form-group-inline">
+                        <div>
+                            <label for="item-price">Цена</label>
+                            <input type="number" id="item-price" name="price" step="0.01" required>
+                        </div>
+                        <div>
+                            <label for="item-currency">Валюта</label>
+                            <select id="sell-currency" name="currency" required>
+                                <option value="USD">USD</option>
+                                <option value="RUB">RUB</option>
+                                <option value="UAH">UAH</option>
+                                <option value="EUR">EUR</option>
+                                <option value="KZT">KZT</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Изображение</label>
+                        <div class="image-upload-wrap">
+                            <input class="file-upload-input" type='file' id="item-image" name="image" onchange="readURL(this);" accept="image/*" required />
+                            <div class="drag-text">
+                                <h3><i class="fas fa-cloud-upload-alt"></i><br>Перетащите или кликните</h3>
+                            </div>
+                        </div>
+                        <div class="file-upload-content">
+                            <img class="file-upload-image" src="#" alt="your image" />
+                            <div class="image-title-wrap">
+                                <button type="button" onclick="removeUpload()" class="remove-image">Удалить</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="button-primary">Выставить на продажу</button>
+                </form>
+            </section>
+
+            <!-- Экран 4: Сделки и Споры -->
+            <section id="deals-view" class="view">
+                <div class="view-header">
+                    <h2>Сделки</h2>
+                </div>
+                <div id="deals-container" class="deals-container">
+                    <!-- Сделки будут загружены сюда -->
+                </div>
+            </section>
+            
+            <!-- Экран 5: Чаты -->
+            <section id="chats-view" class="view">
+                 <div class="view-header">
+                    <h2>Чаты</h2>
+                </div>
+                <p class="info-message">Раздел чатов находится в разработке.</p>
+            </section>
+
+            <!-- Экран 6: Профиль -->
+            <section id="tasks-view" class="view">
+                <div class="view-header">
+                    <h2>Задания</h2>
+                </div>
+                <div id="tasks-list" class="tasks-list">
+                    <!-- Карточки заданий будут вставлены сюда -->
+                </div>
+                <div id="tasks-loading" class="loading-spinner" style="display: none;"></div>
+            </section>
+
+            <section id="profile-view" class="view">
+                 <div class="view-header">
+                    <h2>Профиль</h2>
+
+                </div>
+                <div id="profile-content">
+                    <div class="loading-spinner"></div>
+                </div>
+                <div id="profile-actions" class="profile-actions">
+                    <button class="action-button" data-action="my-sales" onclick="dealsRoleFilter='sales'; loadListModal('Мои продажи');">
+                        <i class="fas fa-store"></i>
+                        <span>Мои продажи</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="action-button" data-action="my-purchases" onclick="dealsRoleFilter='purchases'; loadListModal('Мои покупки');">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span>Мои покупки</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="action-button" data-action="finances">
+                        <i class="fas fa-wallet"></i>
+                        <span>Финансы</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="action-button" data-action="tasks">
+                        <i class="fas fa-tasks"></i>
+                        <span>Задания</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <a href="#" class="side-menu-item"><i class="fas fa-sign-out-alt"></i> Выйти</a>
+            </section>
+        </main>
+    </div>
+
+    <!-- Модальное окно списка (продажи/покупки) -->
+    <div id="list-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-content list-modal">
+            <h3 id="list-modal-title"></h3>
+            <div id="list-modal-body" class="list-modal-body"></div>
+            <button id="list-modal-close" class="modal-footer-button" onclick="document.getElementById('list-modal').style.display='none'">Закрыть</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно сделки -->
+    <div id="deal-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="deal-modal-title">Сделка</h3>
+                <button class="modal-close" id="deal-modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="deal-modal-body">
+                <!-- контент подставляется из JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Нижняя навигация -->
+    <!-- Универсальное модальное окно -->
+    <div id="generic-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3 id="modal-title">Заголовок</h3>
+            <p id="modal-text">Текст сообщения.</p>
+            <button id="modal-close-btn" class="button-primary">Понятно</button>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-button active" data-view="catalog-view">
+            <i class="fas fa-store"></i>
+            <span>Каталог</span>
+        </button>
+        <button class="nav-button" data-view="deals-view">
+            <i class="fas fa-handshake"></i>
+            <span>Сделки</span>
+        </button>
+        <button class="nav-button-primary" data-view="sell-view">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button class="nav-button" data-view="tasks-view">
+            <i class="fas fa-tasks"></i>
+            <span>Задания</span>
+        </button>
+        <button class="nav-button" data-view="profile-view">
+            <i class="fas fa-user"></i>
+            <span>Профиль</span>
+        </button>
+    </nav>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Item Purchase Modal -->
+    <div id="item-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <img id="modal-item-img" src="" alt="Item Image" class="modal-item-img">
+            <h2 id="modal-item-name">Item Name</h2>
+            <p id="modal-item-desc">Item description goes here.</p>
+            <div id="modal-seller-info" class="modal-seller-info">
+                <img id="modal-seller-avatar" src="" alt="Seller" class="modal-seller-avatar">
+                <span id="modal-seller-name">Seller Name</span>
+            </div>
+            <h3 id="modal-item-price">$0.00</h3>
+            <div class="modal-buttons">
+                <button id="modal-cancel-btn" class="btn btn-secondary">Отмена</button>
+                <button id="modal-buy-btn" class="btn btn-primary">Купить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Element -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONSTANTS & VARIABLES ---
+            const tg = window.Telegram.WebApp;
+            tg.expand();
+    
+            // Views and Core UI
+            const views = document.querySelectorAll('.view');
+            const navButtons = document.querySelectorAll('.nav-button, .nav-button-primary');
+            const mainHeader = document.getElementById('main-header');
+            const searchInput = document.getElementById('search-input');
+            const backButtons = document.querySelectorAll('.back-button');
+    
+            // Catalog
+            const catalogGrid = document.getElementById('catalog-grid');
+            const catalogLoading = document.getElementById('catalog-loading');
+            const catalogError = document.getElementById('catalog-error');
+    
+            // Items
+            const itemsGrid = document.getElementById('items-grid');
+            const itemsLoading = document.getElementById('items-loading');
+            const itemsGameName = document.getElementById('items-game-name');
+            const itemsError = document.getElementById('items-error');
+            const itemsView = document.getElementById('items-view');
+    
+            // Sell Form
+            const sellForm = document.getElementById('sell-form');
+            const gameSelect = document.getElementById('item-game');
+    
+            // Profile
+            const profileContent = document.getElementById('profile-content');
+            const profileActions = document.getElementById('profile-actions');
+            const navLinks = document.querySelectorAll('.side-menu-nav a');
+    
+            // Deals
+            const dealsContainer = document.getElementById('deals-container');
+            const dealsHeader = document.querySelector('#deals-view h2');
+    
+            // Generic Modal (for help text etc.)
+            const genericModal = document.getElementById('generic-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalText = document.getElementById('modal-text');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+            
+            // Item Purchase Modal
+            const itemModal = document.getElementById('item-modal');
+            // List modal
+            const listModal=document.getElementById('list-modal');
+            const listModalTitle=document.getElementById('list-modal-title');
+            const listModalBody=document.getElementById('list-modal-body');
+            document.getElementById('list-modal-close').onclick=()=>{
+                listModal.style.display='none';
+                dealsRoleFilter='all';
+            };
+            const modalCancelBtn = document.getElementById('modal-cancel-btn');
+            const modalBuyBtn = document.getElementById('modal-buy-btn');
+    
+            // Notification Element
+            const notificationElement = document.getElementById('notification');
+    
+            // --- PROFILE ACTIONS --- 
+            document.getElementById('profile-actions').addEventListener('click', (e) => {
+                const action = e.target.closest('.action-button')?.dataset.action;
+                if (!action) return;
+
+                if (action === 'finances') {
+                    openFinanceModal();
+                } else if (action === 'tasks') {
+                    switchView('tasks-view');
+                }
+            });
+
+            // --- STATE ---
+            let allGames = [];
+            let dealsRoleFilter = 'all'; // 'all' | 'sales' | 'purchases'
+            let currentUser = null;
+            let currentItem = null; // For the purchase modal
+            // --- VIEW SWITCHING ---
+            function switchView(viewId) {
+                if(viewId==='deals-view'){
+                    if(listModal.style.display==='flex'){listModal.style.display='none';}
+                    if(dealsRoleFilter!=='all') dealsRoleFilter='all';
+                }
+                if(viewId==='deals-view' && dealsHeader){
+                    if(dealsRoleFilter==='sales') dealsHeader.textContent='Мои продажи';
+                    else if(dealsRoleFilter==='purchases') dealsHeader.textContent='Мои покупки';
+                    else dealsHeader.textContent='Сделки';
+                }
+                views.forEach(view => {
+                    view.style.display = view.id === viewId ? 'block' : 'none';
+                });
+                navButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.view === viewId);
+                });
+    
+                mainHeader.style.display = 'none'; // Hide by default
+                if (viewId === 'catalog-view') {
+                    mainHeader.style.display = 'block';
+                } else if (viewId === 'sell-view') {
+                    populateGamesForSellForm();
+                } else if (viewId === 'deals-view') {
+                    fetchAndRenderDeals();
+                } else if (viewId === 'tasks-view') {
+                    fetchAndRenderTasks();
+                }
+            }
+    
+            // --- NOTIFICATIONS ---
+            function showNotification(message, type = 'success') {
+                notificationElement.textContent = message;
+                notificationElement.className = 'notification show';
+                notificationElement.classList.add(type);
+                setTimeout(() => {
+                    notificationElement.className = 'notification';
+                }, 3000);
+            }
+    
+            // --- CATALOG & ITEMS ---
+            async function fetchGames() {
+                catalogLoading.style.display = 'block';
+                catalogError.style.display = 'none';
+                try {
+                    const response = await fetch('/api/games');
+                    if (!response.ok) throw new Error('Не удалось загрузить игры.');
+                    const games = await response.json();
+                    allGames = games;
+                    renderCatalog(games);
+                } catch (error) {
+                    catalogError.textContent = error.message;
+                    catalogError.style.display = 'block';
+                } finally {
+                    catalogLoading.style.display = 'none';
+                }
+            }
+    
+            function renderCatalog(games) {
+                catalogGrid.innerHTML = '';
+                games.forEach((game, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'catalog-card';
+                    card.dataset.name = game.name;
+                    if ((index + 1) % 3 === 0) {
+                        card.classList.add('wide');
+                    }
+                    card.innerHTML = `
+                        <img src="${game.cover_image_url}" alt="${game.name}" class="catalog-card-img">
+                        <div class="catalog-card-name">${game.name}</div>
+                    `;
+                    card.addEventListener('click', () => fetchItems(game.id, game.name));
+                    catalogGrid.appendChild(card);
+                });
+            }
+    
+            async function fetchItems(gameId, gameName) {
+                switchView('items-view');
+                itemsLoading.style.display = 'block';
+                itemsError.style.display = 'none';
+                itemsGrid.innerHTML = '';
+                itemsGameName.textContent = gameName;
+                
+                // Store game context for refreshing
+                itemsView.dataset.gameId = gameId; 
+                itemsView.dataset.gameName = gameName;
+    
+                try {
+                    const response = await fetch(`/api/items/${gameId}`);
+                    if (!response.ok) throw new Error('Не удалось загрузить предметы.');
+                    const items = await response.json();
+                    renderItems(items);
+                } catch (error) {
+                    itemsError.textContent = error.message;
+                    itemsError.style.display = 'block';
+                } finally {
+                    itemsLoading.style.display = 'none';
+                }
+            }
+    
+            function renderItems(items) {
+                itemsGrid.innerHTML = '';
+                if (items.length === 0) {
+                    itemsGrid.innerHTML = '<p class="info-message">Для этой игры пока нет товаров.</p>';
+                    return;
+                }
+                items.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'item-card';
+                    card.onclick = () => showItemModal(item);
+
+                    let imageUrl = item.image_url;
+                    if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/uploads/')) {
+                        imageUrl = '/uploads/' + imageUrl;
+                    }
+
+                    card.innerHTML = `
+                        <img src="${imageUrl}" alt="${item.name}" class="item-image">
+                        <div class="item-info">
+                            <h4 class="item-name">${item.name}</h4>
+                            <p class="item-price">${item.price} ${item.currency}</p>
+                        </div>
+                    `;
+                    itemsGrid.appendChild(card);
+                });
+            }
+
+            // --- ITEM PURCHASE MODAL ---
+            function showItemModal(item) {
+                currentItem = item;
+
+                let imageUrl = item.image_url;
+                if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/uploads/')) {
+                    imageUrl = '/uploads/' + imageUrl;
+                }
+                document.getElementById('modal-item-img').src = imageUrl;
+                document.getElementById('modal-item-name').textContent = item.name;
+                document.getElementById('modal-item-desc').textContent = item.description;
+                document.getElementById('modal-item-price').textContent = `${item.price.toFixed(2)} ${item.currency}`;
+
+                const sellerInfo = document.getElementById('modal-seller-info');
+                if (item.seller) {
+                    document.getElementById('modal-seller-avatar').src = item.seller.photo_url || 'static/images/default-avatar.png';
+                    document.getElementById('modal-seller-name').textContent = item.seller.username || 'Unknown Seller';
+                    sellerInfo.style.display = 'flex';
+                } else {
+                    sellerInfo.style.display = 'none';
+                }
+
+                itemModal.style.display = 'flex';
+            }
+    
+            function hideItemModal() {
+                itemModal.style.display = 'none';
+                currentItem = null;
+            }
+    
+            async function handleBuyItem() {
+                if (!currentItem || !currentUser) {
+                    showNotification('Ошибка: Не удалось определить товар или пользователя.', 'error');
+                    return;
+                }
+                modalBuyBtn.disabled = true;
+                try {
+                    const response = await fetch('/api/deals', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            item_id: currentItem.id,
+                            buyer_telegram_id: currentUser.telegram_id
+                        }),
+                    });
+                    if (response.ok) {
+                        const result = await response.json();
+                        showNotification('Товар успешно куплен! Сделка создана.', 'success');
+                        hideItemModal();
+                        syncAndFetchProfile();
+                        // Refresh item list if the user is on that view
+                        if (itemsView.style.display === 'block') {
+                            fetchItems(itemsView.dataset.gameId, itemsView.dataset.gameName);
+                        }
+                    } else {
+                        const errorData = await response.json().catch(() => ({})); // Safely parse JSON
+                        if (errorData.detail === 'Not enough funds') {
+                            showNotification('Недостаточно средств на балансе.', 'error');
+                        } else {
+                            showNotification(`Ошибка: ${errorData.detail || 'Ошибка покупки. Попробуйте позже.'}`, 'error');
+                        }
+                    }
+                } catch (error) {
+                    showNotification(`Ошибка: ${error.message}`, 'error');
+                } finally {
+                    modalBuyBtn.disabled = false;
+                }
+            }
+    
+            // --- SELL FORM ---
+            async function populateGamesForSellForm() {
+                if (gameSelect.options.length > 1) return;
+                try {
+                    if (allGames.length === 0) await fetchGames();
+                    gameSelect.innerHTML = '<option value="" disabled selected>Выберите игру</option>';
+                    allGames.forEach(game => {
+                        const option = document.createElement('option');
+                        option.value = game.id;
+                        option.textContent = game.name;
+                        gameSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Failed to load games for form:', error);
+                }
+            }
+    
+            async function resizeImage(file, maxSize=800) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    const url = URL.createObjectURL(file);
+                    img.onload = () => {
+                        const scale = Math.min(maxSize / img.width, maxSize / img.height, 1);
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        canvas.toBlob(blob => {
+                            URL.revokeObjectURL(url);
+                            resolve(blob);
+                        }, 'image/jpeg', 0.8);
+                    };
+                    img.onerror = reject;
+                    img.src = url;
+                });
+            }
+
+            async function handleSellFormSubmit(e) {
+                e.preventDefault();
+                if (!currentUser) {
+                    showNotification('Пожалуйста, войдите, чтобы продавать товары.', 'error');
+                    return;
+                }
+
+                const imageInput = document.getElementById('item-image');
+                if (imageInput.files.length === 0) {
+                    showNotification('Пожалуйста, загрузите изображение товара.', 'error');
+                    return; // Stop submission
+                }
+
+                const formData = new FormData();
+                const imageFile = imageInput.files[0];
+                const resizedBlob = await resizeImage(imageFile);
+                formData.append('image', resizedBlob, 'upload.jpg');
+                [...e.target.elements].forEach(el=>{
+                    if(el.name && el.type!=='file') formData.append(el.name, el.value);
+                });
+                formData.append('seller_telegram_id', currentUser.telegram_id);
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                showNotification('Товар отправлен на проверку. Мы уведомим вас, когда он будет опубликован.', 'info');
+                try {
+                    const response = await fetch('/api/items', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    if (response.ok) {
+                        showNotification('Товар успешно выставлен на продажу!', 'success');
+                        e.target.reset();
+                        removeUpload(); 
+                        switchView('catalog-view');
+                    } else {
+                        const error = await response.json();
+                        showNotification(`Ошибка: ${JSON.stringify(error.detail) || 'Не удалось выставить товар.'}`, 'error');
+                    }
+                } catch (error) {
+                    console.error('Sell item error:', error);
+                    showNotification('Произошла ошибка при отправке формы.', 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                }
+            }
+    
+            // --- FINANCE MODAL ---
+        const financeModal = document.getElementById('finance-modal');
+        const financeModalTitle = document.getElementById('finance-modal-title');
+        const financeSteps = financeModal.querySelectorAll('.finance-step');
+        const financeError = document.getElementById('finance-error');
+        const financeBackButton = financeModal.querySelector('[data-action="back"]');
+        const financeNextButton = financeModal.querySelector('[data-action="next"]');
+        const financeConfirmButton = financeModal.querySelector('[data-action="confirm"]');
+
+        // Step-specific elements
+        const countryList = document.getElementById('country-list');
+        const bankList = document.getElementById('bank-list');
+        const amountInput = document.getElementById('finance-amount-input');
+        const currencyAdornment = document.getElementById('finance-currency-adornment');
+        const cardInput = document.getElementById('finance-card-input');
+
+        let financeState = {};
+        let financeData = {
+            countries: [],
+            banks: {}
+        };
+
+        const resetFinanceState = () => {
+            financeState = {
+                currentStep: 0,
+                mode: null, // 'deposit' or 'withdraw'
+                country: null,
+                bank: null,
+                amount: null,
+                cardNumber: null,
+            };
+            financeError.style.display = 'none';
+            amountInput.value = '';
+            cardInput.value = '';
+            document.querySelectorAll('.country-btn.selected, .bank-btn.selected').forEach(btn => btn.classList.remove('selected'));
+        };
+
+        const showFinanceStep = (stepIndex) => {
+            financeState.currentStep = stepIndex;
+            financeSteps.forEach((step, index) => {
+                step.style.display = index === stepIndex ? 'flex' : 'none';
+            });
+            updateFinanceUI();
+        };
+
+        const updateFinanceUI = () => {
+            const { currentStep, mode } = financeState;
+            const titles = {
+                0: "Финансы",
+                1: mode === 'deposit' ? "Пополнение: Выбор страны" : "Вывод: Выбор страны",
+                2: "Выбор банка",
+                3: mode === 'deposit' ? "Сумма пополнения" : "Сумма вывода",
+                4: "Номер карты для вывода",
+                5: "Реквизиты для оплаты",
+                6: "Вывод подтвержден",
+                7: "Ошибка операции"
+            };
+            financeModalTitle.textContent = titles[currentStep] || "Финансы";
+
+            financeBackButton.style.display = (currentStep > 0 && currentStep < 5) ? 'flex' : 'none';
+            financeNextButton.style.display = (currentStep === 3) ? 'flex' : 'none';
+            financeConfirmButton.style.display = (currentStep === 4 || currentStep === 5) ? 'flex' : 'none';
+
+            if (currentStep === 5) {
+                financeConfirmButton.textContent = 'Я оплатил';
+            } else {
+                financeConfirmButton.textContent = 'Подтвердить';
+            }
+            financeError.style.display = 'none';
+        };
+
+        const populateCountries = () => {
+            countryList.innerHTML = '';
+            financeData.countries.forEach(country => {
+                const button = document.createElement('button');
+                button.className = 'selection-list-btn country-btn';
+                button.textContent = country.name;
+                button.dataset.country = country.code;
+                countryList.appendChild(button);
+            });
+        };
+
+        const populateBanks = (countryCode) => {
+            bankList.innerHTML = '';
+            const banks = financeData.banks[countryCode] || [];
+            banks.forEach(bank => {
+                const button = document.createElement('button');
+                button.className = 'selection-list-btn bank-btn';
+                button.textContent = bank;
+                button.dataset.bank = bank;
+                bankList.appendChild(button);
+            });
+        };
+
+        const selectMode = (mode) => {
+            financeState.mode = mode;
+            showFinanceStep(1);
+        };
+
+        const selectCountry = (countryCode) => {
+            financeState.country = countryCode;
+            document.querySelectorAll('.country-btn').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.country === countryCode);
+            });
+            populateBanks(countryCode);
+        };
+
+        const selectBank = (bankName) => {
+            financeState.bank = bankName;
+            document.querySelectorAll('.bank-btn').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.bank === bankName);
+            });
+            showFinanceStep(3);
+        };
+
+        const backStep = () => {
+            const step = financeState.currentStep;
+            if (step === 4) showFinanceStep(3);
+            else if (step === 3) showFinanceStep(2);
+            else if (step === 2) showFinanceStep(1);
+            else if (step === 1) showFinanceStep(0);
+        };
+
+        const nextStep = () => {
+            const { currentStep, mode } = financeState;
+            financeError.style.display = 'none';
+
+            if (currentStep === 3) { // After entering amount
+                const amount = parseFloat(amountInput.value);
+                if (!amount || amount <= 0) {
+                    financeError.textContent = 'Введите корректную сумму.';
+                    financeError.style.display = 'block';
+                    return;
+                }
+                financeState.amount = amount;
+                if (mode === 'deposit') {
+                    fetchDepositDetails();
+                } else { // withdraw
+                    showFinanceStep(4);
+                }
+            }
+        };
+
+        const handleConfirm = async () => {
+            const { currentStep, mode } = financeState;
+            financeError.style.display = 'none';
+
+            if (currentStep === 4 && mode === 'withdraw') {
+                const cardNumber = cardInput.value.trim();
+                if (!cardNumber || cardNumber.length < 16) {
+                    financeError.textContent = 'Введите корректный номер карты.';
+                    financeError.style.display = 'block';
+                    return;
+                }
+                financeState.cardNumber = cardNumber;
+
+                try {
+                    const response = await fetchWithAuth('/api/finance/withdraw', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            amount: financeState.amount,
+                            bank: financeState.bank,
+                            card_number: financeState.cardNumber
+                        })
+                    });
+                    if (response.ok) {
+                        const result = await response.json();
+                        document.getElementById('withdraw-confirm-amount').textContent = `${result.amount} ${result.currency}`;
+                        document.getElementById('withdraw-confirm-card').textContent = result.card_number;
+                        showFinanceStep(6);
+                        loadProfile();
+                    } else {
+                        const error = await response.json();
+                        financeError.textContent = error.detail || 'Ошибка вывода средств.';
+                        financeError.style.display = 'block';
+                    }
+                } catch (err) {
+                    financeError.textContent = 'Произошла сетевая ошибка.';
+                    financeError.style.display = 'block';
+                }
+            } else if (currentStep === 5 && mode === 'deposit') {
+                closeFinanceModal();
+                showNotification('Ваш платеж проверяется. Баланс будет пополнен в ближайшее время.', 'success');
+            }
+        };
+
+        const fetchDepositDetails = async () => {
+            try {
+                const response = await fetchWithAuth('/api/finance/deposit-details', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: financeState.amount, bank: financeState.bank })
+                });
+                if (response.ok) {
+                    const details = await response.json();
+                    document.getElementById('deposit-card-number').textContent = details.card_number;
+                    document.getElementById('deposit-recipient').textContent = details.recipient_name;
+                    document.getElementById('deposit-amount').textContent = `${details.amount} ${details.currency}`;
+                    showFinanceStep(5);
+                } else {
+                    showFinanceStep(7);
+                }
+            } catch (err) {
+                showFinanceStep(7);
+            }
+        };
+
+        const closeFinanceModal = () => {
+            financeModal.style.display = 'none';
+        };
+
+        window.openFinanceModal = async () => {
+            resetFinanceState();
+            if (financeData.countries.length === 0) {
+                try {
+                    const response = await fetchWithAuth('/api/finance/info');
+                    if (response.ok) {
+                        const data = await response.json();
+                        financeData = data;
+                        populateCountries();
+                    } else {
+                        financeError.textContent = 'Не удалось загрузить финансовую информацию.';
+                        financeError.style.display = 'block';
+                    }
+                } catch (err) {
+                    financeError.textContent = 'Сетевая ошибка при загрузке данных.';
+                    financeError.style.display = 'block';
+                }
+            }
+            showFinanceStep(0);
+            financeModal.style.display = 'flex';
+        };
+
+        financeModal.addEventListener('click', (e) => {
+            const t = e.target;
+            const action = t.dataset.action;
+            if (t === financeModal) { closeFinanceModal(); return; }
+
+            if (action === 'close') closeFinanceModal();
+            else if (action === 'back') backStep();
+            else if (action === 'next') nextStep();
+            else if (action === 'confirm') handleConfirm();
+            else if (t.classList.contains('action-select-btn')) selectMode(t.dataset.choice);
+            else if (t.closest('.country-btn')) {
+                 selectCountry(t.closest('.country-btn').dataset.country);
+                 showFinanceStep(2);
+            }
+            else if (t.closest('.bank-btn')) selectBank(t.closest('.bank-btn').dataset.bank);
+        });
+
+        // --- PROFILE ---
+            async function syncAndFetchProfile() {
+                if (!tg.initDataUnsafe || !tg.initDataUnsafe.user) {
+                    console.error("Telegram user data not available.");
+                    profileContent.innerHTML = `<div class="error-message">Не удалось получить данные Telegram.</div>`;
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/sync_user', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            ...tg.initDataUnsafe.user,
+                            initData: tg.initData
+                        })
+                    });
+
+                    if (response.ok) {
+                        const profile = await response.json();
+                        currentUser = profile;
+                        renderProfile(profile);
+                    } else {
+                        console.error('Failed to sync user profile:', response.status, await response.text());
+                        profileContent.innerHTML = `<div class="error-message">Не удалось загрузить профиль. Попробуйте позже.</div>`;
+                    }
+                } catch (error) {
+                    console.error('Error syncing user profile:', error);
+                    profileContent.innerHTML = `<div class="error-message">Ошибка: ${error.message}. Проверьте консоль браузера для деталей.</div>`;
+                }
+            }
+    
+            function renderProfile(profile) {
+                const profileContent = document.getElementById('profile-content');
+                if (profile) {
+                    profileContent.innerHTML = `
+                                                <div class="profile-header">
+                            <img src="${profile.photo_url || 'static/images/default-avatar.png'}" alt="Avatar" class="profile-avatar">
+                            <h2 class="profile-username">${profile.first_name || profile.username}</h2>
+                        </div>
+                        <div class="profile-stats">
+                            <div class="stat-card">
+                                <i class="fas fa-wallet stat-icon"></i>
+                                <span class="stat-value">${(profile.balance || 0).toFixed(2)}</span>
+                                <span class="stat-label">Баланс</span>
+                            </div>
+                            <div class="stat-card">
+                                <i class="fas fa-snowflake stat-icon"></i>
+                                <span class="stat-value">${(profile.frozen_balance || 0).toFixed(2)}</span>
+                                <span class="stat-label">Заморожено</span>
+                            </div>
+                            <div class="stat-card">
+                                <i class="fas fa-gem stat-icon"></i>
+                                <span class="stat-value">${profile.bonuses || 0}</span>
+                                <span class="stat-label">Бонусы</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+    
+            // --- TASKS ---
+            async function fetchAndRenderTasks() {
+                const tasksList = document.getElementById('tasks-list');
+                const tasksLoading = document.getElementById('tasks-loading');
+                if (!tasksList || !tasksLoading || !currentUser) return;
+
+                tasksLoading.style.display = 'block';
+                tasksList.innerHTML = '';
+
+                try {
+                    const response = await fetch(`/api/tasks/${currentUser.telegram_id}`);
+                    if (!response.ok) throw new Error('Не удалось загрузить задания.');
+                    const tasks = await response.json();
+                    renderTasks(tasks);
+                } catch (error) {
+                    tasksList.innerHTML = `<p class="error-message">${error.message}</p>`;
+                } finally {
+                    tasksLoading.style.display = 'none';
+                }
+            }
+
+            const taskIcons = {
+                'fill_profile': 'fas fa-user-edit',
+                'first_purchase': 'fas fa-shopping-cart',
+                'first_sale': 'fas fa-hand-holding-usd',
+                'default': 'fas fa-star'
+            };
+
+            function renderTasks(tasks) {
+                const tasksList = document.getElementById('tasks-list');
+                tasksList.innerHTML = '';
+
+                if (!tasks || tasks.length === 0) {
+                    tasksList.innerHTML = '<p>Нет доступных заданий.</p>';
+                    return;
+                }
+
+                tasks.forEach(task => {
+                    const taskCard = document.createElement('div');
+                    taskCard.className = 'task-card';
+
+                    taskCard.innerHTML = `
+                        <div class="task-header">
+                            <div class="task-icon-wrapper">
+                                <i class="fas ${task.id === 'daily_bonus' ? 'fa-calendar-day' : 'fa-user-plus'}"></i>
+                            </div>
+                            <div class="task-info">
+                                <h4>${task.title}</h4>
+                                <p>${task.description}</p>
+                            </div>
+                        </div>
+                        <div class="task-actions">
+                            <div class="task-reward-text">
+                                <i class="fas fa-gem"></i>
+                                <span>+${task.reward} бонусов</span>
+                            </div>
+                            <button id="task-btn-${task.id}"></button>
+                        </div>
+                    `;
+
+                    const button = taskCard.querySelector(`#task-btn-${task.id}`);
+                    const actionsDiv = taskCard.querySelector('.task-actions');
+
+                    if (task.id === 'daily_bonus') {
+                        if (task.completed) {
+                            button.textContent = 'Сегодня получено';
+                            button.disabled = true;
+                            taskCard.classList.add('completed');
+                        } else {
+                            button.textContent = 'Получить бонус';
+                            button.onclick = () => claimDailyBonus();
+                        }
+                    } else if (task.id === 'first_purchase' || task.id === 'first_sale') {
+                        button.remove(); // No button for these tasks
+                        if (task.completed) {
+                            const statusText = document.createElement('p');
+                            statusText.textContent = 'Бонус получен';
+                            statusText.className = 'task-completed-text';
+                            actionsDiv.appendChild(statusText);
+                            taskCard.classList.add('completed');
+                        } else {
+                            const statusText = document.createElement('p');
+                            statusText.textContent = 'Не выполнено';
+                            statusText.className = 'task-incomplete-text';
+                            actionsDiv.appendChild(statusText);
+                        }
+                    }
+
+                    tasksList.appendChild(taskCard);
+                });
+            }
+
+            async function completeTask(button, taskId) {
+                const card = button.closest('.task-card');
+
+                if (!currentUser || !taskId) {
+                    showNotification('Ошибка: не удалось определить пользователя или задачу.', 'error');
+                    return;
+                }
+
+                button.disabled = true;
+                button.textContent = 'Выполняется...';
+
+                try {
+                    const response = await fetch('/api/tasks/complete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            telegram_id: currentUser.telegram_id,
+                            task_id: taskId
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        showNotification('Задание выполнено! Бонусы начислены.', 'success');
+                        button.textContent = 'Выполнено';
+                        card.classList.add('completed'); // Optional: for styling
+                        // Update user's bonus balance in the UI
+                        document.getElementById('user-bonuses').textContent = result.new_bonus_balance;
+                        currentUser.bonuses = result.new_bonus_balance; // Update local state
+                    } else {
+                        throw new Error(result.detail || 'Не удалось выполнить задание.');
+                    }
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                    button.disabled = false;
+                    button.textContent = 'Выполнить';
+                }
+            }
+
+            // --- DEALS ---
+            async function fetchAndRenderDeals() {
+                if (!currentUser) {
+                    console.error("fetchAndRenderDeals called but currentUser is null");
+                    return;
+                }
+                dealsContainer.innerHTML = '<div class="loading-spinner"></div>';
+                console.log(`Fetching deals for user: ${currentUser.telegram_id}`);
+                try {
+                    const endpoint = dealsRoleFilter==='sales' ? `/api/my_sales/${currentUser.telegram_id}` : `/api/deals/${currentUser.telegram_id}`;
+                    const response = await fetch(endpoint);
+                    console.log("Response from /api/deals:", response);
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error("Error fetching deals:", response.status, errorText);
+                        throw new Error('Не удалось загрузить сделки. Статус: ' + response.status);
+                    }
+                    const data = await response.json();
+                    console.log('my_sales response',data);
+                    let activeItems=[];
+                    let deals=[];
+                    if(dealsRoleFilter==='sales') {
+                        activeItems = data.active_items || [];
+                        deals = data.deals || [];
+                    } else {
+                        deals = data;
+                    }
+                    const targetContainer = listModal.style.display === 'flex' ? listModalBody : dealsContainer;
+                    targetContainer.innerHTML = ''; // Clear only once
+
+                    let contentExists = false;
+                    if (dealsRoleFilter === 'sales' && activeItems.length > 0) {
+                        renderActiveItems(activeItems, targetContainer);
+                        contentExists = true;
+                    }
+
+                    if (dealsRoleFilter === 'purchases') {
+                        deals = deals.filter(d => d.buyer.telegram_id === currentUser.telegram_id);
+                    }
+
+                    if (deals.length > 0) {
+                        renderDeals(deals, currentUser.telegram_id, targetContainer);
+                        contentExists = true;
+                    }
+
+                    if (!contentExists) {
+                        targetContainer.innerHTML = '<p class="info-message">Здесь пока ничего нет.</p>';
+                    }
+                } catch (error) {
+                    console.error("Error in fetchAndRenderDeals:", error);
+                    dealsContainer.innerHTML = `<p class="error-message">${error.message}</p>`;
+                }
+            }
+    
+            function renderActiveItems(items, targetContainer){
+
+                items.forEach(item=>{
+                    const card=document.createElement('div');
+                    card.className='deal-card-mini';
+                    card.style.display='flex';card.style.gap='12px';card.style.alignItems='center';
+                    card.innerHTML=`<img src="${item.image_url}" class="deal-thumb" style="width:80px;height:80px;object-fit:cover;border-radius:8px;flex-shrink:0;">
+                        <div class="deal-mini-info">
+                            <div class="deal-mini-title">${item.name}</div>
+                            <div class="deal-mini-price">${item.price.toFixed(2)} ${item.currency} <span class="badge badge-listed">На продаже</span></div>
+                        </div>`;
+                    targetContainer.appendChild(card);
+                });
+            }
+
+            async function loadListModal(title){
+                listModalTitle.textContent=title;
+                listModalBody.innerHTML='<div class="loading-spinner"></div>';
+                listModal.style.display='flex';
+                await fetchAndRenderDeals();
+            }
+
+            function renderDeals(deals, currentUserId, targetContainer) {
+                console.log("Rendering deals for user:", currentUserId, "Deals data:", deals);
+                if (!deals || deals.length === 0) {
+                    console.log("No deals to render.");
+                    // If active items were already rendered, we don't want to show the 'no deals' message.
+                    if(targetContainer.innerHTML === '' || targetContainer.innerHTML === '<div class="loading-spinner"></div>') {
+                         targetContainer.innerHTML = '<p class="info-message">У вас пока нет активных сделок.</p>';
+                    }
+                    return;
+                }
+                deals.forEach(deal => {
+                    console.log("Processing deal:", deal);
+                    if (!deal.seller || !deal.buyer || !deal.item) {
+                        console.error("Malformed deal object, skipping:", deal);
+                        return; 
+                    }
+
+                    const isSeller = deal.seller.telegram_id === currentUserId;
+                    const isBuyer = deal.buyer.telegram_id === currentUserId;
+                    console.log(`Deal ${deal.id}: isSeller=${isSeller}, isBuyer=${isBuyer}`);
+
+                    const card = document.createElement('div');
+                    card.className = `deal-card-mini status-${deal.status}`;
+                        card.style.display = 'flex';
+                        card.style.flexDirection = 'row';
+                        card.style.alignItems = 'center';
+                        card.style.gap = '12px';
+                    // Pass the correct role to the modal opener
+                    card.onclick = () => openDealModal(deal, isSeller);
+
+                    card.innerHTML = `
+                        <img src="${deal.item.image_url || '/static/images/default-placeholder.png'}" class="deal-thumb" style="width:80px;height:80px;object-fit:cover;border-radius:8px;flex-shrink:0;">
+                        <div class="deal-mini-info">
+                            <div class="deal-mini-title">${deal.item.name}</div>
+                            <div class="deal-mini-price">${deal.price.toFixed(2)} ${deal.item.currency}</div>
+                        </div>
+                        <div class="deal-mini-status ${deal.status}">${deal.status}</div>
+                    `;
+                    targetContainer.appendChild(card);
+                });
+            }
+
+            window.shipDeal = async (dealId) => {
+                try {
+                    const response = await fetch(`/api/deals/${dealId}/ship`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ telegram_id: currentUser.telegram_id })
+                    });
+                    if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.detail || 'Не удалось подтвердить отправку.');
+                    }
+                    showNotification('Отправка подтверждена!', 'success');
+                    document.getElementById('deal-modal').style.display = 'none';
+                    fetchAndRenderDeals();
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                }
+            }
+    
+            window.completeDeal = async (dealId) => {
+                try {
+                    const response = await fetch(`/api/deals/${dealId}/complete`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ telegram_id: currentUser.telegram_id })
+                    });
+                    if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.detail || 'Не удалось завершить сделку.');
+                    }
+                    showNotification('Сделка успешно завершена!', 'success');
+                    document.getElementById('deal-modal').style.display = 'none';
+                    fetchAndRenderDeals();
+                    syncAndFetchProfile();
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                }
+            }
+    
+            window.openDealModal = (deal, isSeller) => {
+                const modal = document.getElementById('deal-modal');
+                const body = document.getElementById('deal-modal-body');
+                const other = isSeller ? deal.buyer : deal.seller;
+
+                body.innerHTML = ''; // Clear previous content
+
+                const img = document.createElement('img');
+                img.src = deal.item.image_url;
+                img.className = 'deal-modal-image';
+                img.style.maxHeight = '180px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '8px';
+
+                const contentWrapper = document.createElement('div');
+                contentWrapper.className = 'modal-text-content';
+
+                let primaryAction = '';
+                if (isSeller && deal.status === 'frozen') {
+                    primaryAction = `<button class="btn btn-primary" onclick="shipDeal('${deal.id}')">Я передал товар</button>`;
+                } else if (!isSeller && deal.status === 'shipped') {
+                    primaryAction = `<button class="btn btn-primary" onclick="completeDeal('${deal.id}')">Завершить сделку</button>`;
+                }
+                const actionsHtml = `${primaryAction}<button class="btn btn-secondary" onclick="openDispute('${deal.id}')">Открыть спор</button>`;
+
+                contentWrapper.innerHTML = `
+                    <h4>${deal.item.name}</h4>
+                    <p style="color:var(--secondary-text-color);margin-bottom:8px;">${deal.item.description || ''}</p>
+                    <div class="modal-price">${deal.price.toFixed(2)} ${deal.item.currency}</div>
+                    <div class="deal-party-info">
+                        <img src="${other.photo_url || 'static/images/default-avatar.png'}" alt="avatar">
+                        <span class="username">@${other.username || 'user'}</span>
+                        <a href="https://t.me/${other.username}" target="_blank" class="chat-link">Чат</a>
+                    </div>
+                    <div class="modal-buttons">${actionsHtml}</div>
+                `;
+                
+                body.appendChild(img);
+                body.appendChild(contentWrapper);
+                modal.style.display = 'flex';
+            };
+
+            document.getElementById('deal-modal-close').addEventListener('click',()=>{
+                document.getElementById('deal-modal').style.display='none';
+            });
+
+            window.openDispute = (dealId) => {
+                showNotification(`Функция спора для сделки #${dealId} находится в разработке.`, 'info');
+            }
+    
+            // --- GENERIC MODAL & HELPERS ---
+            window.showFrozenHelp = () => {
+                modalTitle.textContent = 'Замороженный баланс';
+                modalText.textContent = 'Это сумма средств, которая зарезервирована для ваших текущих покупок. Деньги будут переведены продавцу только после того, как вы подтвердите получение товара.';
+                genericModal.style.display = 'flex';
+            }
+    
+            function closeModal() {
+                genericModal.style.display = 'none';
+            }
+    
+            // --- EVENT LISTENERS ---
+            navButtons.forEach(button => button.addEventListener('click', () => switchView(button.dataset.view)));
+            backButtons.forEach(button => button.addEventListener('click', () => switchView(button.dataset.target)));
+            document.getElementById('sell-form').addEventListener('submit', handleSellFormSubmit);
+
+            sellForm.addEventListener('submit', handleSellFormSubmit);
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const gameCards = catalogGrid.querySelectorAll('.catalog-card');
+                gameCards.forEach(card => {
+                    const gameName = card.dataset.name.toLowerCase();
+                    card.style.display = gameName.includes(searchTerm) ? '' : 'none';
+                });
+            });
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const viewName = link.getAttribute('data-view');
+                    if (viewName) {
+                        switchView(viewName);
+                        profileSideMenu.classList.remove('active');
+                    }
+                });
+            });
+            modalCloseBtn.addEventListener('click', closeModal);
+            genericModal.addEventListener('click', (e) => {
+                if (e.target === genericModal) closeModal();
+            });
+            modalCancelBtn.addEventListener('click', hideItemModal);
+            modalBuyBtn.addEventListener('click', handleBuyItem);
+            itemModal.addEventListener('click', (e) => {
+                if (e.target === itemModal) hideItemModal();
+            });
+            document.addEventListener('click', (e) => {
+                if (profileSideMenu.classList.contains('active') && 
+                    !profileSideMenu.contains(e.target) && 
+                    !e.target.closest('#profile-menu-toggle')) {
+                    profileSideMenu.classList.remove('active');
+                }
+            });
+
+
+    
+            function claimDailyBonus() {
+                if (!currentUser) return;
+
+                fetch('/api/tasks/daily_bonus', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ telegram_id: currentUser.telegram_id, task_id: 'daily_bonus' }), // task_id is not strictly needed by new endpoint but good practice
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.detail || 'Не удалось получить бонус.'); });
+                    }
+                    return response.json();
+                })
+                .then(updatedProfile => {
+                    // Update UI with new profile data
+                    currentUser = updatedProfile;
+                    renderProfile(updatedProfile);
+                    // Re-render tasks to show the updated status
+                    fetchAndRenderTasks(); 
+                    showNotification('Бонус получен!', 'success');
+                })
+                .catch(error => {
+                    console.error('Error claiming daily bonus:', error);
+                    showNotification(`Ошибка: ${error.message}`, 'error');
+                });
+            }
+
+            // --- PARTICLE BACKGROUND ---
+            const background = document.getElementById('background-animation');
+            const numParticles = 50;
+            function createParticle() {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                const size = Math.random() * 4 + 1;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${Math.random() * 100}vw`;
+                particle.style.top = `${Math.random() * 100}vh`;
+                const xEnd = (Math.random() - 0.5) * 200;
+                const yEnd = (Math.random() - 0.5) * 200;
+                particle.style.setProperty('--x-end', `${xEnd}px`);
+                particle.style.setProperty('--y-end', `${yEnd}px`);
+                const duration = Math.random() * 15 + 10;
+                particle.style.animationDuration = `${duration}s`;
+                particle.addEventListener('animationend', () => {
+                    particle.remove();
+                    createParticle();
+                });
+                background.appendChild(particle);
+            }
+    
+            // --- INITIALIZATION ---
+            for (let i = 0; i < numParticles; i++) {
+                createParticle();
+            }
+            syncAndFetchProfile().then(() => {
+                fetchGames();
+                switchView('catalog-view');
+            });
+        });
+    
+        function readURL(input) {
+          if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+              document.querySelector('.image-upload-wrap').style.display = 'none';
+              document.querySelector('.file-upload-image').src = e.target.result;
+              document.querySelector('.file-upload-content').style.display = 'block';
+              document.querySelector('.image-title').innerHTML = input.files[0].name;
+            };
+            reader.readAsDataURL(input.files[0]);
+          } else {
+            removeUpload();
+          }
+        }
+    
+        function removeUpload() {
+          const input = document.querySelector('.file-upload-input');
+          input.value = '';
+          document.querySelector('.file-upload-content').style.display = 'none';
+          document.querySelector('.image-upload-wrap').style.display = 'block';
+        }
+    </script>
+<!-- Finance Modal -->
+<div id="finance-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content finance-modal-content">
+        <!-- Step 0: Action Select -->
+<!-- duplicate empty finance-step removed
+            <h3 class="modal-title">Финансы</h3>
+            <div class="action-select">
+            </div>
+--> 
+                <div class="modal-body">
+                <!-- Step 0: Action Selection (Deposit/Withdraw) -->
+                <div class="finance-step" data-step="0">
+                    <p class="step-description">Выберите действие, которое хотите совершить.</p>
+                    <div class="action-buttons">
+                        <button class="action-select-btn" data-choice="deposit">
+                            <i class="fas fa-wallet"></i>
+                            <span>Пополнить</span>
+                        </button>
+                        <button class="action-select-btn" data-choice="withdraw">
+                            <i class="fas fa-hand-holding-usd"></i>
+                            <span>Вывести</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 1: Country Selection -->
+                <div class="finance-step" data-step="1" style="display: none;">
+                    <h4 class="step-title">Выберите страну</h4>
+                    <div id="country-list" class="selection-list">
+                        <!-- Countries will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Step 2: Bank Selection -->
+                <div class="finance-step" data-step="2" style="display: none;">
+                    <h4 class="step-title">Выберите банк</h4>
+                    <div id="bank-list" class="selection-list">
+                        <!-- Banks will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Step 3: Amount Input -->
+                <div class="finance-step" data-step="3" style="display: none;">
+                    <h4 id="amount-title" class="step-title">Введите сумму</h4>
+                    <div class="input-group">
+                        <input type="number" id="finance-amount" class="styled-input" placeholder="0.00" min="0">
+                        <span id="finance-currency" class="input-adornment"></span>
+                    </div>
+                </div>
+
+                <!-- Step 4 (Withdraw): Card Input -->
+                <div class="finance-step" data-step="4" style="display: none;">
+                    <h4 class="step-title">Номер вашей карты</h4>
+                    <p class="step-description">Введите номер карты для зачисления средств.</p>
+                    <div class="input-group">
+                        <input type="text" id="withdraw-card-number" class="styled-input" placeholder="0000 0000 0000 0000">
+                    </div>
+                </div>
+
+                <!-- Step 5 (Deposit): Deposit Details -->
+                <div class="finance-step" data-step="5" style="display: none;">
+                    <h4 class="step-title">Реквизиты для оплаты</h4>
+                    <div id="deposit-details-box" class="details-box">
+                        <!-- Details will be injected here -->
+                    </div>
+                    <p class="small-text">Переведите точную сумму на указанные реквизиты. После успешной оплаты нажмите "Проверить".</p>
+                </div>
+                
+                <!-- Step 6 (Withdraw): Confirmation -->
+                <div class="finance-step" data-step="6" style="display: none;">
+                    <div class="confirmation-box">
+                        <i class="fas fa-check-circle success-icon"></i>
+                        <h4 class="step-title">Заявка на вывод создана</h4>
+                        <p>Средства поступят на вашу карту в ближайшее время. Вы можете закрыть это окно.</p>
+                    </div>
+                </div>
+
+                <!-- Step 7 (Deposit): Payment Not Found -->
+                 <div class="finance-step" data-step="7" style="display: none;">
+                    <div class="confirmation-box">
+                        <i class="fas fa-times-circle error-icon"></i>
+                        <h4 class="step-title">Оплата не найдена</h4>
+                        <p>Мы не смогли найти вашу оплату. Пожалуйста, попробуйте снова через несколько минут или обратитесь в поддержку.</p>
+                    </div>
+                </div>
+                
+                <!-- Error Message Container -->
+                <div id="finance-error" class="error-message" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="footer-btn" data-action="back" style="display: none;">
+                    <i class="fas fa-arrow-left"></i> Назад
+                </button>
+                <button class="footer-btn primary" data-action="next" style="display: none;">
+                    Далее <i class="fas fa-arrow-right"></i>
+                </button>
+                <button class="footer-btn confirm" data-action="confirm" style="display: none;">
+                    <i class="fas fa-search-dollar"></i> Проверить
+                </button>
+                <button class="footer-btn" data-action="close-finance-final" style="display: none;">
+                    Закрыть
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--
+    const financeModal = document.getElementById('finance-modal');
+    if(!financeModal) return; // safety
+
+    let financeState = { mode:null, country:null, bank:null, amount:0, currency:'', card:'' };
+    const bankData = {
+        RU:{ currency:'RUB', banks:['Сбербанк','Тинькофф','Альфа-Банк'] },
+        UA:{ currency:'UAH', banks:['ПриватБанк','Монобанк','Ощадбанк'] },
+        KZ:{ currency:'KZT', banks:['Kaspi Bank','Halyk Bank','ForteBank'] }
+    };
+
+    // Public function used by profile button
+    window.openFinanceModal = function(){
+        resetState();
+        showStep(0);
+        financeModal.style.display='flex';
+    };
+    function closeFinanceModal(){ financeModal.style.display='none'; }
+
+    financeModal.addEventListener('click', (e)=>{
+        if(e.target===financeModal) { closeFinanceModal(); return; }
+        const t=e.target;
+        if(t.dataset.action==='close') closeFinanceModal();
+        else if(t.classList.contains('action-select-btn')) selectMode(t.dataset.choice);
+        else if(t.classList.contains('country-btn')) selectCountry(t.dataset.country);
+        else if(t.classList.contains('bank-btn')) selectBank(t.dataset.bank);
+        else if(t.dataset.action==='back') backStep();
+        else if(t.dataset.action==='next') nextStep();
+        else if(t.dataset.action==='confirm') handleConfirm();
+    });
+
+    function resetState(){ financeState={ country:null, bank:null, amount:0, currency:'' }; }
+    function showStep(n){
+        financeModal.querySelectorAll('.finance-step').forEach((s,i)=>{s.style.display=(i===n)?'flex':'none';});
+        if(n===1) {} // country
+        if(n===2) renderBanks();
+        if(n===3) { document.getElementById('finance-currency').textContent=financeState.currency; document.getElementById('finance-amount-input').value=''; }
+        if(n===4) {
+            if(financeState.mode==='deposit') renderDepositDetails();
+            else renderWithdrawInput();
+        }
+    }
+    function backStep(){ const cur=getCurrentStep(); if(cur>0) showStep(cur-1);} 
+    function nextStep(){ const cur=getCurrentStep();
+        if(cur===3){ const val=document.getElementById('finance-amount-input').value; if(!val||val<=0){ showNotification('Введите сумму','error'); return;} financeState.amount=val; }
+        if(financeState.mode==='deposit' && cur===4) return; // no next after details
+        if(financeState.mode==='withdraw' && cur===4){ // after card input
+            handleConfirm(); return;
+        }
+        showStep(cur+1);}
+    function getCurrentStep(){ return [...financeModal.querySelectorAll('.finance-step')].findIndex(s=>s.style.display==='block'); }
+    function selectMode(m){ financeState.mode=m; showStep(1);} 
+    function selectCountry(c){ financeState.country=c; financeState.currency=bankData[c].currency; showStep(2);} 
+    function selectBank(b){ financeState.bank=b; showStep(3);} 
+    function renderBanks(){ const cont=document.getElementById('finance-step-2'); const banks=bankData[financeState.country].banks; cont.innerHTML=`<h3 class='modal-title'>Выбор банка</h3><div class='bank-selection'>${banks.map(b=>`<button class='bank-btn' data-bank='${b}'>${b}</button>`).join('')}</div><button class='button-secondary' data-action='back'>Назад</button>`; }
+    function renderDepositDetails(){ const c=financeState; const names={RU:['Иван П.','Алексей С.','Елена М.'],UA:['Олександр К.','Марія Л.','Дмитро П.'],KZ:['Айдос Е.','Гульнара С.','Нурлан Б.']}; const randomName=names[c.country][Math.floor(Math.random()*names[c.country].length)]; const prefixes={RU:{'Сбербанк':'4276','Тинькофф':'5536','Альфа-Банк':'5559'},UA:{'ПриватБанк':'4149','Монобанк':'5375','Ощадбанк':'5167'},KZ:{'Kaspi Bank':'4400','Halyk Bank':'4592','ForteBank':'4342'}}; const randCard=(p,l)=>{let n=p; while(n.length<l) n+=Math.floor(Math.random()*10); return n.replace(/(.{4})/g,'$1 ').trim();}; const card=randCard(prefixes[c.country][c.bank]||'4',16); const type={RU:'Перевод по номеру карты',UA:'Переказ на картку',KZ:'Аударым карта нөмірі бойынша'}[c.country]; document.getElementById('payment-details-content').innerHTML=`<p>Переведите <strong>${c.amount} ${c.currency}</strong> на карту:</p><p><strong>${card}</strong> (${c.bank})</p><p>Получатель: <strong>${randomName}</strong></p><p>Тип операции: ${type}</p><br><p>После перевода нажмите \"Я пополнил\"</p>`; }
+    function renderWithdrawInput(){ document.getElementById('payment-details-content').innerHTML=`<p>Куда вывести <strong>${financeState.amount} ${financeState.currency}</strong>?</p><input type='text' id='withdraw-card' placeholder='Номер карты' class='input-field' style='width:100%;margin-bottom:12px;'> <div class='button-group'><button class='button-secondary' data-action='back'>Назад</button><button class='button-primary' data-action='confirm'>Создать заявку</button></div>`; }
+-->
+
+</body>
+</html>

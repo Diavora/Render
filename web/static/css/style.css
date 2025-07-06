@@ -1,0 +1,1790 @@
+/* --- General Setup & Typography --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --background-color: #0d1117;
+    --primary-text-color: #c9d1d9;
+    --secondary-text-color: #8b949e;
+    --accent-color: #2ecc71;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --card-background: #161b22;
+    --button-primary-bg: #238636;
+    --button-primary-hover-bg: #2ea043;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background-color);
+    color: var(--primary-text-color);
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* --- Animated Background --- */
+#background-animation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Поместить за всем контентом */
+    overflow: hidden;
+    background-color: var(--background-color);
+}
+
+.particle {
+    position: absolute;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    animation: move-particle linear infinite;
+    box-shadow: 0 0 5px var(--accent-color), 0 0 10px var(--accent-color);
+}
+
+@keyframes move-particle {
+    0% {
+        transform: translate(0, 0);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--x-end), var(--y-end));
+        opacity: 0;
+    }
+}
+
+/* --- Floating Header --- */
+#main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba(13, 17, 23, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#header-content {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* --- Search Bar --- */
+.search-bar {
+    width: 100%;
+    padding: 10px 15px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    background-color: var(--card-background);
+    color: var(--primary-text-color);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.search-bar:focus {
+    border-color: var(--accent-color);
+}
+
+/* --- App Structure --- */
+.app-container {
+    max-width: 500px;
+    margin: 0 auto;
+    /* Top padding accounts for the fixed header height */
+    padding: 70px 15px 100px 15px; 
+}
+
+main.main-content {
+    width: 100%;
+}
+
+/* --- View Header (for back button etc.) --- */
+.view-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    margin-bottom: 15px;
+    gap: 15px;
+}
+
+.view-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    flex-grow: 1;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    color: var(--primary-text-color);
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.back-button i {
+    font-size: 24px;
+}
+
+/* --- Image Upload Styling --- */
+
+.file-upload-content {
+    display: none;
+    text-align: center;
+    margin-top: 15px;
+}
+
+.file-upload-image {
+    max-height: 200px;
+    width: 100%;
+    margin: auto;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.image-title-wrap {
+    margin-top: 10px;
+}
+
+.remove-image {
+    padding: 10px 25px;
+    border-radius: 8px;
+    border: none;
+    background-color: #c93c3c;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.remove-image:hover {
+    background-color: #a53131;
+}
+
+.image-upload-wrap:hover {
+    background-color: #1c2128;
+    border-color: var(--accent-color);
+}
+
+/* --- New Finance Modal Styles --- */
+#finance-modal .modal-content {
+    max-width: 420px;
+    background-color: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+}
+
+#finance-modal .modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #30363d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#finance-modal .modal-header h3, #finance-modal .modal-header h4, #finance-modal #finance-modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #c9d1d9;
+    margin: 0;
+}
+
+#finance-modal .close-button {
+    font-size: 24px;
+    color: #8b949e;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+#finance-modal .close-button:hover {
+    color: #c9d1d9;
+}
+
+#finance-modal .modal-body {
+    padding: 20px;
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+}
+
+.finance-step {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.step-title {
+    font-size: 17px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #c9d1d9;
+}
+
+.step-description {
+    font-size: 15px;
+    color: #8b949e;
+    margin-bottom: 24px;
+    max-width: 90%;
+}
+
+/* Step 0: Action Selection */
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+}
+
+.action-select-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
+    background-color: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    color: #c9d1d9;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.action-select-btn:hover {
+    background-color: #30363d;
+    border-color: #8b949e;
+    transform: translateY(-2px);
+}
+
+.action-select-btn i {
+    font-size: 24px;
+    color: #8b949e;
+    transition: color 0.2s ease;
+}
+
+.action-select-btn:hover i {
+    color: #c9d1d9;
+}
+
+/* Steps 1 & 2: Country/Bank Selection */
+.selection-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.selection-list button {
+    width: 100%;
+    padding: 14px;
+    background-color: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    color: #c9d1d9;
+    font-size: 16px;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.selection-list button:hover {
+    background-color: #30363d;
+    border-color: #8b949e;
+}
+
+.selection-list button.selected {
+    background-color: #238636;
+    border-color: #2ea043;
+    color: white;
+    font-weight: 600;
+}
+
+/* Step 3 & 4: Input fields */
+.input-group {
+    position: relative;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.styled-input {
+    width: 100%;
+    padding: 14px 16px;
+    background-color: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    color: #c9d1d9;
+    font-size: 18px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.styled-input:focus {
+    border-color: #2ea043;
+    box-shadow: 0 0 0 3px rgba(46, 160, 67, 0.2);
+}
+
+.input-adornment {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8b949e;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* Step 5: Deposit Details */
+.details-box {
+    width: 100%;
+    background-color: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.details-box .detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #21262d;
+}
+
+.details-box .detail-item:last-child {
+    border-bottom: none;
+}
+
+.details-box .detail-label {
+    font-size: 14px;
+    color: #8b949e;
+}
+
+.details-box .detail-value {
+    font-size: 15px;
+    font-weight: 500;
+    color: #c9d1d9;
+}
+
+.small-text {
+    font-size: 13px;
+    color: #8b949e;
+    line-height: 1.5;
+}
+
+/* Step 6 & 7: Confirmation/Error Box */
+.confirmation-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+.confirmation-box .success-icon,
+.confirmation-box .error-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.confirmation-box .success-icon {
+    color: #2ea043;
+}
+
+.confirmation-box .error-icon {
+    color: #f85149;
+}
+
+/* Footer Buttons */
+#finance-modal .modal-footer {
+    padding: 16px 20px;
+    background-color: #161b22;
+    border-top: 1px solid #30363d;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.footer-btn {
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid #30363d;
+    background-color: #21262d;
+    color: #c9d1d9;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-btn:hover {
+    background-color: #30363d;
+    border-color: #8b949e;
+}
+
+.footer-btn.primary,
+.footer-btn.confirm {
+    background-color: #238636;
+    border-color: #2ea043;
+    color: white;
+}
+
+.footer-btn.primary:hover,
+.footer-btn.confirm:hover {
+    background-color: #2ea043;
+}
+
+/* Error Message */
+#finance-error {
+    color: #f85149;
+    background-color: rgba(248, 81, 73, 0.1);
+    border: 1px solid rgba(248, 81, 73, 0.3);
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 15px;
+    width: 100%;
+    text-align: center;
+    font-size: 14px;
+}
+
+
+/* --- Profile View --- */
+.profile-container {
+    position: relative; /* For side menu positioning */
+    text-align: center;
+    padding-top: 20px;
+}
+
+.side-menu-toggle {
+    flex-shrink: 0; /* Prevent shrinking */
+    background: none;
+    border: none;
+    color: var(--secondary-text-color);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.side-menu-toggle:hover {
+    color: var(--primary-text-color);
+    transform: scale(1.1);
+}
+
+.profile-balance-cards {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.balance-card {
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    max-width: 200px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.balance-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.balance-card-icon {
+    font-size: 24px;
+    color: var(--accent-color);
+}
+
+.balance-card-info {
+    text-align: left;
+}
+
+.balance-card-title {
+    font-size: 13px;
+    color: var(--secondary-text-color);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.balance-card-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary-text-color);
+}
+
+.help-icon {
+    cursor: pointer;
+    color: var(--secondary-text-color);
+    transition: color 0.2s;
+}
+
+.help-icon:hover {
+    color: var(--accent-color);
+}
+
+.profile-header {
+    margin-bottom: 25px;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px solid var(--accent-color);
+    object-fit: cover;
+    margin-bottom: 15px;
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
+}
+
+.profile-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--primary-text-color);
+    margin-bottom: 5px;
+}
+
+.profile-username {
+    font-size: 15px;
+    color: var(--secondary-text-color);
+}
+
+.profile-stats {
+    display: flex;
+    justify-content: space-around;
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+/* --- Deals Section --- */
+.deals-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+    padding: 0 15px;
+}
+
+.deal-card-mini {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.deal-card-mini:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    border-color: var(--accent-color);
+}
+
+.deal-thumb {
+    width: 80px !important;
+    height: 80px !important;
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* Ensure modal deal image never exceeds reasonable size */
+.deal-modal-image {
+    width: 100%;
+    max-height: 180px !important;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.deal-mini-info {
+    flex-grow: 1;
+}
+
+.deal-mini-title {
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--primary-text-color);
+}
+
+.deal-mini-price {
+    font-size: 13px;
+    color: var(--accent-color);
+    font-weight: 500;
+}
+
+.deal-mini-status {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 10px;
+    padding: 3px 7px;
+    border-radius: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #fff;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.deal-mini-status.frozen { background-color: #3498db; }
+.deal-mini-status.shipped { background-color: #f39c12; }
+.deal-mini-status.completed { background-color: #2ecc71; }
+.deal-mini-status.disputed { background-color: #e74c3c; }
+
+/* --- Buttons --- */
+.btn {
+    display: inline-block;
+    font-weight: 600;
+    color: var(--primary-text-color);
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    user-select: none;
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 12px 20px;
+    font-size: 15px;
+    border-radius: 10px;
+    transition: all 0.2s ease-in-out;
+    width: 100%;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: var(--button-primary-bg);
+    border-color: var(--button-primary-bg);
+}
+
+.btn-primary:hover {
+    background-color: var(--button-primary-hover-bg);
+    border-color: var(--button-primary-hover-bg);
+}
+
+.btn-secondary {
+    color: var(--primary-text-color);
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* --- Deal Modal --- */
+#deal-modal-body {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden; /* This is the main container */
+}
+
+.deal-modal-image {
+    width: 100%;
+    max-height: 180px;
+    object-fit: cover;
+    flex-shrink: 0; /* Prevents the image from shrinking */
+}
+
+.modal-text-content {
+    flex-grow: 1; /* Allows this container to fill remaining space */
+    overflow-y: auto; /* Enables scrolling ONLY for the text content */
+    padding: 20px;
+    min-height: 0; /* Critical for flexbox scrolling in some browsers */
+}
+
+.deal-party-info {
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 12px;
+    border-radius: 10px;
+    margin: 0; /* Adjusted from 15px 0 */
+}
+
+.deal-party-info img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+}
+
+.deal-party-info .username {
+    font-weight: 600;
+    color: var(--primary-text-color);
+}
+
+.deal-party-info .chat-link {
+    margin-left: auto;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    background-color: var(--accent-color);
+    color: #000;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.deal-party-info .chat-link:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+}
+
+.stat-label {
+    font-size: 13px;
+    color: var(--secondary-text-color);
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.stat-value.earned {
+    color: var(--accent-color);
+}
+
+.stat-value.spent {
+    color: #e74c3c;
+}
+
+.modal-content {
+    background: linear-gradient(145deg, #1e232b, #13171d);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    max-width: 420px;
+    width: 90%;
+    color: var(--primary-text-color);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    animation: modalFade 0.3s ease-out;
+    padding: 0; /* Remove default padding for custom layout */
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h4 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: var(--primary-text-color);
+}
+
+.modal-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-price {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent-color);
+    margin-bottom: 5px;
+}
+
+.modal-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* --- Profile Side Menu --- */
+.side-menu {
+    position: fixed;
+    top: 0;
+    right: -250px; /* Start hidden off-screen */
+    width: 220px;
+    height: 100%;
+    background: rgba(22, 27, 34, 0.8);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-left: 1px solid var(--border-color);
+    z-index: 1100;
+    transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    padding-top: 60px; /* Space for status bar */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.side-menu.active {
+    right: 0; /* Slide in */
+}
+
+.side-menu-button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--primary-text-color);
+    padding: 12px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.side-menu-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(-3px);
+}
+
+.side-menu-button i {
+    font-size: 18px;
+    width: 20px; /* Align icons */
+    text-align: center;
+    color: var(--secondary-text-color);
+}
+
+/* --- Bottom Navigation --- */
+nav.bottom-nav {
+    position: fixed;
+    z-index: 1000;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 24px);
+    max-width: 500px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 5px 0;
+    border-radius: 24px;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
+    background-color: rgba(22, 27, 34, 0.85);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid var(--border-color);
+}
+
+.nav-button, .nav-button-primary {
+    background: none;
+    border: none;
+    color: var(--secondary-text-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 11px;
+    cursor: pointer;
+    transition: color 0.3s ease, transform 0.2s ease;
+    gap: 4px;
+    padding: 5px 12px;
+    flex-grow: 1;
+    text-align: center;
+}
+
+.nav-button i {
+    font-size: 22px;
+    margin-bottom: 2px;
+}
+
+.nav-button.active {
+    color: var(--accent-color);
+    transform: translateY(-3px);
+}
+
+.nav-button-primary {
+    background-color: var(--button-primary-bg);
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    justify-content: center;
+    padding: 0;
+    margin: 0 10px;
+    flex-grow: 0; /* Don't let it grow */
+}
+
+.nav-button-primary i {
+    font-size: 24px;
+    margin: 0;
+}
+
+.nav-button-primary.active {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px var(--accent-color);
+}
+
+/* --- Views & Transitions --- */
+.view {
+    display: none;
+}
+
+.view.active {
+    display: block;
+    animation: view-fade-in 0.4s ease-out;
+}
+
+@keyframes view-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* --- Catalog & Items Grid --- */
+.catalog-grid, .items-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.catalog-card, .item-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: var(--card-background);
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    display: block; /* For search filtering */
+}
+
+.catalog-card:hover, .item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.catalog-card {
+    height: 140px;
+}
+
+.catalog-card.wide {
+    grid-column: span 2;
+    height: 160px;
+}
+
+.catalog-card-img, .item-card-img {
+    width: 100%;
+    height: 160px; /* Fixed height for consistency */
+    object-fit: cover; /* Prevents image distortion */
+    display: block;
+}
+
+.catalog-card:hover .catalog-card-img,
+.item-card:hover .item-card-img {
+    transform: scale(1.05);
+}
+
+.catalog-card-name {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 15px 10px;
+    font-weight: 600;
+    font-size: 15px;
+    text-align: center;
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+}
+
+/* --- Item Card Specifics --- */
+.item-card {
+    background-color: #2c2f3b; /* Fallback color */
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.item-image {
+    width: 100%;
+    height: 160px; /* Fixed height for all images */
+    object-fit: cover; /* Ensures image covers the area without distortion */
+}
+
+.item-info {
+    padding: 12px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.item-name {
+    font-size: 0.95em;
+    font-weight: 600;
+    line-height: 1.3;
+    height: 2.6em; /* Fixed height for max 2 lines (1.3 * 2) */
+    margin: 0 0 8px 0;
+    color: var(--primary-text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.item-price {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent-color);
+    margin-top: auto; /* Pushes price to the very bottom of the card */
+    align-self: flex-start; /* Aligns price to the left */
+}
+
+.item-tag {
+    position: absolute;
+    top: 10px;
+    right: -35px;
+    background-color: #e74c3c;
+    color: white;
+    padding: 5px 40px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    transform: rotate(45deg);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 2;
+}
+
+/* --- Modal --- */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    display: none; /* Hidden by default */
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background-color: var(--secondary-bg-color);
+    padding: 25px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    position: relative;
+    border: 1px solid var(--border-color);
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px; /* Spacing between buttons */
+    margin-top: 20px;
+}
+
+.btn {
+    flex-grow: 1; /* Make buttons share space equally */
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn-primary {
+    background-color: var(--primary-accent-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: var(--tertiary-bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background-color: var(--hover-bg-color);
+}
+
+.modal-item-img {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+.modal-item-name {
+    font-size: 1.8em;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.modal-item-desc {
+    font-size: 1em;
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+.modal-seller-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px 15px;
+    border-radius: 12px;
+}
+
+.modal-seller-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}
+
+/* --- Profile Actions --- */
+
+/* --- Item Modal --- */
+.modal-overlay,
+#item-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: none; /* toggled via JS */
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+#item-modal {
+    display: none; /* ensure hidden by default */
+}
+
+.modal-content {
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    max-width: 420px;
+    width: 90%;
+    padding: 20px;
+}
+
+@keyframes modalFade {
+from { transform: translateY(20px); opacity: 0; }
+to   { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 15px 20px;
+border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h4 {
+margin: 0;
+font-size: 18px;
+}
+
+.modal-close {
+background: none;
+border: none;
+font-size: 24px;
+color: var(--secondary-text-color);
+cursor: pointer;
+transition: color 0.2s;
+}
+
+.modal-close:hover {
+color: var(--primary-text-color);
+}
+
+.modal-body {
+padding: 20px;
+display: flex;
+flex-direction: column;
+gap: 15px;
+    gap: 6px;
+}
+
+.modal-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+.modal-buttons {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+}
+
+.modal-buttons .btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-primary {
+    background-color: var(--button-primary-bg);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--button-primary-hover-bg);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--secondary-text-color);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background-color: var(--card-background);
+    color: var(--primary-text-color);
+}
+
+/* --- Deal Card Enhancements --- */
+.deal-card {
+    position: relative;
+    overflow: hidden; /* clip hover effect */
+}
+
+.deal-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(46, 204, 113, 0.05);
+    transition: all 0.35s ease;
+}
+
+.deal-card:hover::before {
+    left: 0;
+}
+
+.profile-actions {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.action-button {
+    display: flex;
+    align-items: center;
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 15px;
+    width: 100%;
+    text-align: left;
+    color: var(--primary-text-color);
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.action-button:hover {
+    background-color: #1c2128;
+    border-color: var(--accent-color);
+}
+
+.action-button i:first-child {
+    font-size: 20px;
+    margin-right: 15px;
+    color: var(--secondary-text-color);
+    width: 25px; /* Fixed width for alignment */
+    text-align: center;
+}
+
+.action-button span {
+    flex-grow: 1;
+    font-weight: 500;
+}
+
+.action-button i.fa-chevron-right {
+    font-size: 14px;
+    color: var(--secondary-text-color);
+    transition: color 0.2s;
+}
+
+.action-button:hover i.fa-chevron-right {
+    color: var(--accent-color);
+}
+
+/* --- Notifications --- */
+.notification {
+    position: fixed;
+    bottom: 80px; /* Above bottom nav */
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 25px;
+    border-radius: 12px;
+    color: #fff;
+    font-weight: 500;
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s ease, bottom 0.3s ease;
+    pointer-events: none;
+}
+
+.notification.show {
+    opacity: 1;
+    bottom: 90px;
+}
+
+.notification.success {
+    background: linear-gradient(45deg, #28a745, #218838);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+}
+
+.notification.error {
+    background: linear-gradient(45deg, #dc3545, #c82333);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+}
+
+
+/* --- Sell Form --- */
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-weight: 500;
+    color: var(--secondary-text-color);
+}
+
+.form-container input,
+.form-container textarea,
+.form-container select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--card-background);
+    color: var(--primary-text-color);
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+}
+
+.form-group-inline {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+}
+
+.form-group-inline > div {
+    flex: 1;
+}
+
+.file-input-hidden {
+    display: none;
+}
+
+.file-upload-label {
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.file-upload-label:hover {
+    background-color: var(--card-background);
+    border-color: var(--accent-color);
+}
+
+.file-upload-label i {
+    font-size: 24px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.image-preview {
+    max-width: 100%;
+    margin-top: 15px;
+    border-radius: 8px;
+}
+
+.button-primary {
+    background-color: var(--button-primary-bg);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+    position: relative;
+}
+
+.button-primary:hover {
+    background-color: var(--button-primary-hover-bg);
+}
+
+.button-primary:disabled {
+    background-color: #8b949e;
+    cursor: not-allowed;
+}
+
+/* --- Utility --- */
+.loading-spinner, .loading-spinner-small {
+    border: 4px solid var(--border-color);
+    border-top: 4px solid var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    margin: 40px auto;
+}
+.loading-spinner-small {
+    width: 20px;
+    height: 20px;
+    border-width: 3px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.info-message, .error-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--secondary-text-color);
+    margin: 0 auto; /* center horizontally */
+    max-width: 320px;
+}
+
+.error-message {
+color: #f85149;
+}
+
+.stat-value.spent {
+color: #e74c3c;
+}
+
+.help-icon {
+margin-left: 5px;
+color: var(--secondary-text-color);
+cursor: pointer;
+transition: color 0.2s;
+}
+
+.help-icon:hover {
+color: var(--primary-text-color);
+}
+
+/* --- Profile Side Menu --- */
+.side-menu-toggle {
+    flex-shrink: 0; /* Prevent shrinking */
+    background: none;
+    border: none;
+    color: var(--secondary-text-color);
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.side-menu {
+position: fixed;
+top: 0;
+right: -220px; /* Hidden by default */
+width: 200px;
+height: 100%;
+background-color: #1c2128;
+z-index: 1100;
+transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+padding: 80px 10px 20px 10px;
+display: flex;
+flex-direction: column;
+gap: 10px;
+border-left: 1px solid var(--border-color);
+}
+
+.side-menu.active {
+right: 0;
+}
+
+.side-menu-button {
+background-color: var(--card-background);
+border: 1px solid var(--border-color);
+color: var(--primary-text-color);
+padding: 12px 15px;
+border-radius: 8px;
+text-align: left;
+font-size: 15px;
+cursor: pointer;
+display: flex;
+align-items: center;
+gap: 15px;
+transition: background-color 0.2s;
+}
+
+.side-menu-button:hover {
+background-color: #2d333b;
+}
+
+.side-menu-button i {
+font-size: 18px;
+width: 20px;
+text-align: center;
+color: var(--secondary-text-color);
+}
+
+/* List modal */
+.list-modal{max-height:80vh;overflow-y:auto;}
+.list-modal-body{display:flex;flex-direction:column;gap:12px;margin-top:10px;}
+#list-modal-close, .modal-content button.button-secondary{margin-top:15px;width:100%;}
+
+/* Badge styles for sales list */
+.badge{
+    padding:2px 6px;
+    border-radius:6px;
+    font-size:11px;
+    color:#ffffff;
+}
+.badge-listed{background:#2188ff;}
+.badge-sold{background:#8b949e;}
+
+/* --- Generic Modal --- */
+.modal-overlay {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.7);
+z-index: 2000;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 15px;
+}
+
+.modal-content {
+background-color: var(--card-background);
+padding: 25px;
+border-radius: 16px;
+border: 1px solid var(--border-color);
+max-width: 400px;
+width: 100%;
+text-align: center;
+animation: modal-appear 0.3s ease-out;
+}
+
+@keyframes modal-appear {
+from { transform: scale(0.9); opacity: 0; }
+to { transform: scale(1); opacity: 1; }
+}
+
+.modal-content h3 {
+font-size: 18px;
+font-weight: 600;
+margin-bottom: 10px;
+}
+
+.modal-content p {
+font-size: 15px;
+color: var(--secondary-text-color);
+line-height: 1.5;
+margin-bottom: 20px;
+}
+
+.modal-content button {
+    width: 100%;
+}
+
+/* --- Finance Modal Specific Styles --- */
+.finance-modal-content {
+    max-width: 420px;
+    width: 90%;
+    padding: 30px 25px;
+}
+
+.finance-step {
+    display: none;
+    flex-direction: column;
+    gap: 18px;
+    animation: view-fade-in 0.3s ease-out;
+}
+
+.finance-step .modal-title {
+    margin-bottom: 6px;
+}
+
+.action-select,
+.country-selection,
+.bank-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+@media (min-width: 400px) {
+    .action-select,
+    .country-selection,
+    .bank-selection {
+        flex-direction: row;
+    }
+}
+
+.action-select-btn,
+.country-btn,
+.bank-btn {
+    flex: 1 1 auto;
+    background-color: var(--card-background);
+    color: var(--primary-text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 15px;
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.action-select-btn i {
+    font-size: 20px;
+}
+
+.action-select-btn:hover,
+.country-btn:hover,
+.bank-btn:hover {
+    background-color: rgba(255,255,255,0.08);
+}
+
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-group .input-field {
+    flex-grow: 1;
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background-color: var(--card-background);
+    color: var(--primary-text-color);
+    font-size: 16px;
+}
+
+.currency-label {
+    position: absolute;
+    right: 18px;
+    color: var(--secondary-text-color);
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.button-group {
+    display: flex;
+    gap: 12px;
+}
+
+.payment-details {
+    text-align: left;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--secondary-text-color);
+}

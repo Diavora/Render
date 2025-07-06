@@ -1,0 +1,11 @@
+python-telegram-bot[ext]==21.0.1
+fastapi==0.111.0
+uvicorn==0.23.2
+httpx==0.25.0
+SQLAlchemy==2.0.30
+python-telegram-bot
+Pillow
+aiofiles
+python-multipart
+Jinja2==3.1.4
+aiofiles==23.2.1
