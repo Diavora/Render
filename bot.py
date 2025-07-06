@@ -31,14 +31,17 @@ LOCAL_HOST = "0.0.0.0"
 
 def run_fastapi():
     """Function to run the FastAPI server using uvicorn."""
-    if not BOT_TOKEN or not WEB_APP_URL:
-        logger.error("BOT_TOKEN and WEB_APP_URL must be set in environment variables.")
-        return
+    # This function just runs the server. The checks are done where they are needed.
     print(f"Starting FastAPI server on http://{LOCAL_HOST}:{LOCAL_PORT}")
     uvicorn.run(fastapi_app, host=LOCAL_HOST, port=LOCAL_PORT)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handler for the /start command. Sends a button to open the web app."""
+    if not WEB_APP_URL:
+        logger.error("WEB_APP_URL is not set. Cannot send web app button.")
+        await update.message.reply_text("Ошибка конфигурации: URL веб-приложения не установлен.")
+        return
+
     keyboard = [
         [InlineKeyboardButton("Открыть магазин", web_app=WebAppInfo(url=WEB_APP_URL))]
     ]
@@ -48,8 +51,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         reply_markup=reply_markup
     )
 
+
 def main() -> None:
     """Main function to start the web server and the Telegram bot."""
+    if not BOT_TOKEN:
+        logger.critical("FATAL: BOT_TOKEN environment variable is not set. Exiting.")
+        return
+
     # Start the FastAPI server in a separate process
     server_process = multiprocessing.Process(target=run_fastapi)
     server_process.start()
