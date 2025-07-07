@@ -843,6 +843,11 @@ def complete_deal(deal_id: int, user_data: UserUpdate, db: Session = Depends(get
         seller.bonuses += 50
         seller.first_sale_bonus_received = True
 
+    # Transfer funds from buyer's frozen balance to seller's main balance
+    buyer.frozen_balance -= deal.price
+    seller.balance += deal.price
+
+    # Change item ownership
     item = deal.item
     item.owner_id = deal.buyer_id
 
