@@ -1,0 +1,30 @@
+# Render.com Infrastructure as Code file
+# Docs: https://render.com/docs/infrastructure-as-code
+
+services:
+  # Web-часть (FastAPI)
+  - type: web
+    name: sacredx-web
+    env: python
+    startCommand: uvicorn web.app:app --host 0.0.0.0 --port $PORT
+    
+  # Telegram-бот (фоновый процесс)
+  - type: worker          # <-- главное отличие
+    name: sacredx-bot
+    env: python
+    startCommand: python bot.py
+    autoDeploy: true
+    # Установите переменные среды через Dashboard Render
+    # Пример:
+    # envVars:
+    #   - key: BOT_TOKEN
+    #     sync: false  # задаётся через UI
+    #   - key: DATABASE_URL
+    #     fromDatabase: my-db
+
+# При необходимости добавьте секцию databases, если планируете размещать БД на Render
+# databases:
+#   - name: sacredx-db
+#     plan: free
+#     postgresMajorVersion: 15
+#     ipAllowList: []
