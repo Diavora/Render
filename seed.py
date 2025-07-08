@@ -20,7 +20,8 @@ GAME_COVERS = {
     "Team Fortress 2": "/static/images/catalog/tf2.jpg",
     "Rust": "/static/images/catalog/rust.jpg",
     "World of Warcraft": "/static/images/catalog/wow.jpg",
-    "Escape from Tarkov": "/static/images/catalog/tarkov.jpg"
+    "Escape from Tarkov": "/static/images/catalog/tarkov.jpg",
+    "Standoff 2": "/static/images/catalog/standoff-2.jpg"
 }
 
 def seed_database(db: Session):

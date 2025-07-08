@@ -158,7 +158,7 @@ def run_product_import(db: Session = Depends(get_db)):
                 game = g
                 break
         if not game:
-            game = Game(name=game_name, image_url=f'/static/images/games/{game_name.lower().replace(" ", "-")}.png')
+            game = Game(name=game_name, cover_image_url=f'/static/images/catalog/{game_name.lower().replace(" ", "-")}.png')
             db.add(game)
             db.flush() # Flush to get the new game's ID
             import_log[game_name].append(f"Created new game '{game_name}' in the database.")
@@ -454,18 +454,7 @@ async def create_withdrawal_request(request: Request, db: Session = Depends(get_
 def get_user_profile(user_id: str, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.telegram_id == str(user_id)).first()
     if not user:
-        # If user doesn't exist, create them with a default state
-        user = User(
-            telegram_id=str(user_id),
-            username=f"user_{user_id}",  # Placeholder username
-            first_name=f"User {user_id}",
-            photo_url='/static/images/my-avatar.png',
-            balance=0.0,  # Starting balance
-            frozen_balance=0.0
-        )
-        db.add(user)
-        db.commit()
-        db.refresh(user)
+        raise HTTPException(status_code=404, detail="User not found. Please sync first.")
 
     deals_as_buyer_count = db.query(Deal).filter(Deal.buyer_id == user.id).count()
     deals_as_seller_count = db.query(Deal).filter(Deal.seller_id == user.id).count()
@@ -583,6 +572,27 @@ async def claim_daily_bonus(request: CompleteTaskRequest, db: Session = Depends(
 @app.get("/api/games", response_model=List[GameResponse])
 def get_games(db: Session = Depends(get_db)):
     return db.query(Game).all()
+
+@app.post("/api/update-game-paths")
+def update_game_paths(db: Session = Depends(get_db)):
+    """
+    Обновляет пути к изображениям игр в базе данных.
+    Меняет '/static/images/games/' на '/static/images/catalog/' в путях к изображениям.
+    """
+    games = db.query(Game).all()
+    updated_count = 0
+    
+    for game in games:
+        if game.cover_image_url and '/static/images/games/' in game.cover_image_url:
+            game.cover_image_url = game.cover_image_url.replace(
+                '/static/images/games/', 
+                '/static/images/catalog/'
+            )
+            updated_count += 1
+    
+    db.commit()
+    
+    return {"status": "success", "message": f"Updated {updated_count} game image paths."}
 
 @app.get("/api/items/{game_id}")
 def get_game_items(game_id: int, db: Session = Depends(get_db)):
